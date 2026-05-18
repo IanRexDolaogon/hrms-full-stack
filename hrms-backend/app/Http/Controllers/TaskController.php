@@ -31,7 +31,6 @@ class TaskController extends Controller
             'status' => 'pending', // Default status
         ]);
 
-        // EVALUATION CRITERIA #1: This Eloquent method perfectly handles the Many-to-Many pivot table
         $task->users()->sync($request->user_ids);
 
         return response()->json([
@@ -44,7 +43,6 @@ class TaskController extends Controller
     public function myTasks($userId)
     {
     $user = User::findOrFail($userId);
-    // Note the "with('users')" part! This includes the teammates in the response.
     $tasks = $user->tasks()->with('users')->orderBy('created_at', 'desc')->get();
 
     return response()->json($tasks);
