@@ -22,7 +22,7 @@ const Register = () => {
                 name,
                 email,
                 password,
-                password_confirmation: passwordConfirm // Matches Laravel's required field name
+                password_confirmation: passwordConfirm 
             });
             // Log them in immediately after successful registration
             login(response.data.user, response.data.token);

@@ -18,7 +18,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable implements HasMedia // Added HasMedia Interface
+class User extends Authenticatable implements HasMedia 
 {
     
     use HasFactory, Notifiable, HasApiTokens, HasRoles, InteractsWithMedia;
@@ -36,7 +36,7 @@ class User extends Authenticatable implements HasMedia // Added HasMedia Interfa
         ];
     }
     
-    public function tasks() { 
-        return $this->belongsToMany(Task::class); 
+    public function tasks() {
+    return $this->belongsToMany(Task::class)->withPivot('status');
     }
 }

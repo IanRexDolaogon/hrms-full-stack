@@ -9,16 +9,13 @@ class Task extends Model
 {
     use HasFactory;
 
-    // This allows us to use Task::create() safely
     protected $fillable = [
         'title',
         'description',
         'status',
     ];
 
-    // This defines the Many-to-Many relationship with Users
-    public function users()
-    {
-        return $this->belongsToMany(User::class);
-    }
+    public function users() {
+    return $this->belongsToMany(User::class)->withPivot('status');
+    }   
 }

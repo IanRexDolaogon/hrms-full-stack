@@ -6,7 +6,7 @@ import Register from './components/Register';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminDashboard from './components/AdminDashboard';
 import EmployeeDashboard from './components/EmployeeDashboard';
-
+import Profile from './components/Profile';
 
 
 function App() {
@@ -29,8 +29,8 @@ function App() {
                     isAdmin ? <AdminDashboard /> : <EmployeeDashboard />
                 } />
                 
-                {/* Profile will go here later */}
-                {/* <Route path="/profile" element={<Profile />} /> */}
+                {/* Profile */}
+                <Route path="/profile" element={<Profile />} />
                 
             </Route>
         </Routes>
