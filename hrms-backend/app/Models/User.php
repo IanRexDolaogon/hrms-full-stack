@@ -28,6 +28,7 @@ class User extends Authenticatable implements HasMedia
      *
      * @return array<string, string>
      */
+    protected $appends = ['avatar_url'];
     protected function casts(): array
     {
         return [
@@ -38,5 +39,10 @@ class User extends Authenticatable implements HasMedia
     
     public function tasks() {
     return $this->belongsToMany(Task::class)->withPivot('status');
+    }
+
+    public function getAvatarUrlAttribute()
+    {
+        return $this->getFirstMediaUrl('avatars') ?: null;
     }
 }

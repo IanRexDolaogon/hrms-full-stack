@@ -99,4 +99,11 @@ class TaskController extends Controller
         // 3. Return the freshly updated task (with its remaining users) back to React
         return response()->json($task->load('users'));
     }
+    public function destroy($id)
+    {
+        $task = Task::findOrFail($id);
+        $task->delete(); 
+        
+        return response()->json(['message' => 'Task deleted successfully']);
+    }
 }

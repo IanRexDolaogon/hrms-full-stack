@@ -7,7 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AdminDashboard from './components/AdminDashboard';
 import EmployeeDashboard from './components/EmployeeDashboard';
 import Profile from './components/Profile';
-
+import TeamDirectory from './components/TeamDirectory';
 
 function App() {
     const { user } = useContext(AuthContext);
@@ -31,7 +31,7 @@ function App() {
                 
                 {/* Profile */}
                 <Route path="/profile" element={<Profile />} />
-                
+                <Route path="/team" element={<TeamDirectory />} />
             </Route>
         </Routes>
     );

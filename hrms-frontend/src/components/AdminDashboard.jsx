@@ -3,8 +3,9 @@ import api from '../api/axios';
 import { 
     Container, Typography, TextField, Button, Box, Card, CardContent, 
     Grid, Select, MenuItem, InputLabel, FormControl, Chip, Alert,
-    Modal, Divider, LinearProgress 
+    Modal, Divider, LinearProgress, ToggleButton, ToggleButtonGroup
 } from '@mui/material';
+
 
 const AdminDashboard = () => {
     const [employees, setEmployees] = useState([]);
@@ -17,6 +18,7 @@ const AdminDashboard = () => {
 
     const [openModal, setOpenModal] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
+    const [filter, setFilter] = useState('all');
 
     useEffect(() => {
         fetchEmployees();
@@ -24,8 +26,14 @@ const AdminDashboard = () => {
     }, []);
 
     const fetchEmployees = async () => { 
-        const response = await api.get('/users');
-        setEmployees(response.data);
+        const response = await api.get('/users?with=roles');
+        
+        const justEmployees = response.data.filter(user => {
+            const isAdmin = user.roles?.some(role => role.name === 'admin');
+            return !isAdmin; 
+        });
+
+        setEmployees(justEmployees);
     };
 
     const fetchTasks = async () => { 
@@ -44,6 +52,11 @@ const AdminDashboard = () => {
         setSelectedTask(task);
         setOpenModal(true);
     };
+
+    const filteredTasks = tasks.filter(task => {
+    if (filter === 'all') return true;
+    return task.status === filter;
+    });
 
     // ---Remove User ---
     const handleRemoveUser = async (taskId, userId) => {
@@ -65,6 +78,17 @@ const AdminDashboard = () => {
         return Math.round((completed / task.users.length) * 100);
     };
 
+    const handleDeleteTask = async (taskId) => {
+        if (!window.confirm("Are you sure you want to completely delete this task?")) return;
+        try {
+            await api.delete(`/tasks/${taskId}`);
+            // Remove it from the UI instantly
+            setTasks(tasks.filter(t => t.id !== taskId));
+        } catch (error) {
+            console.error("Failed to delete task", error);
+        }
+    };
+
     return (
         <Container maxWidth="md" sx={{ mt: 5, mb: 5 }}>
             <Typography variant="h4" gutterBottom>Admin Dashboard</Typography>
@@ -76,11 +100,20 @@ const AdminDashboard = () => {
                  <Box component="form" onSubmit={handleCreateTask}>
                     <TextField fullWidth required label="Task Title" margin="normal" value={title} onChange={(e) => setTitle(e.target.value)} />
                     <TextField fullWidth required multiline rows={3} label="Task Description" margin="normal" value={description} onChange={(e) => setDescription(e.target.value)} />
-                    <FormControl fullWidth margin="normal" required>
-                        <InputLabel>Assign Employees</InputLabel>
-                        <Select multiple value={selectedUsers} onChange={(e) => setSelectedUsers(e.target.value)}>
+                   <FormControl fullWidth margin="normal" required>
+                        <InputLabel id="assign-employees-label">Assign Employees</InputLabel>
+                        <Select 
+                            labelId="assign-employees-label"
+                            id="assign-employees-select"
+                            multiple 
+                            value={selectedUsers} 
+                            label="Assign Employees" /* <--- THIS FIXES THE PHASING LINE */
+                            onChange={(e) => setSelectedUsers(e.target.value)}
+                        >
                             {employees.map((employee) => (
-                                <MenuItem key={employee.id} value={employee.id}>{employee.name}</MenuItem>
+                                <MenuItem key={employee.id} value={employee.id}>
+                                    {employee.name}
+                                </MenuItem>
                             ))}
                         </Select>
                     </FormControl>
@@ -89,23 +122,61 @@ const AdminDashboard = () => {
             </Card>
 
             <Typography variant="h5" gutterBottom>All Tasks Overview</Typography>
+            <ToggleButtonGroup
+                color="primary"
+                value={filter}
+                exclusive
+                onChange={(e, newFilter) => {
+                    if (newFilter !== null) setFilter(newFilter);
+                }}
+                size="small"
+            >
+                <ToggleButton value="all">All</ToggleButton>
+                <ToggleButton value="pending">Pending</ToggleButton>
+                <ToggleButton value="in_progress">In Progress</ToggleButton>
+                <ToggleButton value="completed">Completed</ToggleButton>
+            </ToggleButtonGroup>
             <Grid container spacing={3}>
-                {tasks.map((task) => {
+               {filteredTasks.map((task) => {
                     const progress = calculateProgress(task); // Get the percentage
 
                     return (
                         <Grid item xs={12} key={task.id}>
                             <Card>
                                 <CardContent>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <Typography variant="h6">{task.title}</Typography>
-                                        <Button variant="outlined" size="small" onClick={() => handleViewDetails(task)}>
-                                            Manage Team
-                                        </Button>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                        <Box>
+                                            <Typography variant="h6">{task.title}</Typography>
+                                            <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
+                                                Created: {new Date(task.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{ display: 'flex', gap: 1 }}>
+                                            <Button variant="outlined" size="small" onClick={() => handleViewDetails(task)}>
+                                                Manage Team
+                                            </Button>
+                                            <Button variant="outlined" color="error" size="small" onClick={() => handleDeleteTask(task.id)}>
+                                                Delete
+                                            </Button>
+                                        </Box>
                                     </Box>
-                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{task.description}</Typography>
+
+                                    {/* Task Description */}
+                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2, mt: 1 }}>
+                                        {task.description}
+                                    </Typography>
                                     
-                                    {/* --- The Progress Bar --- */}
+                        
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                                        <Typography variant="subtitle2">Overall Status:</Typography>
+                                        <Chip 
+                                            label={task.status.replace('_', ' ').toUpperCase()} 
+                                            color={task.status === 'completed' ? 'success' : task.status === 'in_progress' ? 'warning' : 'default'}
+                                            size="small"
+                                        />
+                                    </Box>
+
+                                    {/* Progress Bar */}
                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, mt: 1 }}>
                                         <Box sx={{ width: '100%', mr: 2 }}>
                                             <LinearProgress variant="determinate" value={progress} color={progress === 100 ? 'success' : 'primary'} />
@@ -115,6 +186,7 @@ const AdminDashboard = () => {
                                         </Box>
                                     </Box>
 
+                                    {/* Assigned Users List */}
                                     <Box sx={{ display: 'flex', gap: 0.5, mt: 2 }}>
                                         {task.users && task.users.length > 0 ? (
                                             task.users.map(user => <Chip key={user.id} label={user.name} size="small" variant="outlined" />)
@@ -162,6 +234,7 @@ const AdminDashboard = () => {
                 </Box>
             </Modal>
         </Container>
+        
     );
 };
 

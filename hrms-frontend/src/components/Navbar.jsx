@@ -35,15 +35,17 @@ const Navbar = () => {
     if (!token) return null;
 
     return (
-        <AppBar position="static" sx={{ mb: 4 }}>
+        <AppBar position="sticky" sx={{ top: 0, zIndex: 1100, mb: 4 }}>
             <Toolbar>
                 <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                     HRMS Workspace
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Button color="inherit" component={Link} to="/">Home</Button>
+                    <Button color="inherit" component={Link} to="/team">
+                        Team
+                    </Button>
                     <Button color="inherit" component={Link} to="/profile">Profile</Button>
-                    
                     {/* The New Navbar Avatar */}
                     <Avatar 
                         src={avatarUrl || ''} 

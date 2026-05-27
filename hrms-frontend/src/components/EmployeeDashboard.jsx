@@ -71,10 +71,15 @@ const EmployeeDashboard = () => {
                                 <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                                     <CardContent sx={{ flexGrow: 1 }}>
                                         <Typography variant="h6" gutterBottom>{task.title}</Typography>
+                                        
+                                        {/* ---Date --- */}
+                                        <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1, mt: -1 }}>
+                                            Assigned: {new Date(task.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                        </Typography>
+
                                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                                             {task.description}
                                         </Typography>
-                                        
                                         {/* --- The Progress Bar --- */}
                                         <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>Team Progress:</Typography>
                                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
